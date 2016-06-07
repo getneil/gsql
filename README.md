@@ -1,2 +1,2 @@
 # GSQL
-## Simplified Sequelize and GraphQL models
+Simplified Sequelize and GraphQL models

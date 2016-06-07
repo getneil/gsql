@@ -1,0 +1,23 @@
+{
+  "name": "gsql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getneil/gsql.git"
+  },
+  "author": "Neil Molina < get.neilmolina@gmail.com >",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/getneil/gsql/issues"
+  },
+  "homepage": "https://github.com/getneil/gsql#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
+  }
+}
