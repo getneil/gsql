@@ -1,3 +1,3 @@
-module.exports = function(){
-  // Begin Code
-};
+'use strict';
+
+module.exports = require('./lib/gsql.js');
