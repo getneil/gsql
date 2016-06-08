@@ -1,21 +1,60 @@
+'use strict';
 var expect = require('chai').expect;
 
 var app = require('./app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
+  , GsqlModelClass = require('../lib/model.js')
   , Sequelize = require('sequelize');
+
+
 
 describe('GSQL config:', function(){
 
   it('should be an instance of Gsql', function(){
-    expect(app.gsqlInstance).to.be.an.instanceof(GsqlRaw);
+    expect(app.gi).to.be.an.instanceof(GsqlRaw);
   })
 
   it('should have a define method', function(){
-    expect(app.gsqlInstance.define).to.be.a('function');
+    expect(app.gi.define).to.be.a('function');
   })
 
   it('should return the Sequelize connection object', function(){
-    expect(app.gsqlInstance.connection).to.be.an.instanceof(Sequelize);
+    expect(app.gi.connection).to.be.an.instanceof(Sequelize);
   })
 
 });
+
+describe('GSQL Define() :',function(){
+
+  it('empty gsql.define() should throw an error if arguments are not defined or are invalid', function(){
+    let testDefineError = {
+      empty: function(){
+        app.gi.define();
+      },
+      nameOnly: function(){
+        app.gi.define('TestObject');
+      },
+      completeButNoAttributes: function(){
+        app.gi.define('TestObject',{});
+      }
+    }
+    expect(testDefineError.empty).to.throw('modelName is not defined.');
+    expect(testDefineError.nameOnly).to.throw('Model configuration is not defined.');
+    expect(testDefineError.completeButNoAttributes).to.throw('No Model attributes found in the configuration.');
+  });
+
+  describe('should return a proper GSQL Model', function(){
+    it('should be an instance of GSQL model', function(){
+      expect(app.models.User).to.be.an.instanceof(GsqlModelClass);
+    })
+    it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
+      var sequelizeModelClass = require('../node_modules/sequelize/lib/model/attributes.js');
+      expect(app.models.User.sequelize).to.be.an.instanceof(sequelizeModelClass);
+    })
+    it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
+      var graphqlModelClass = "";
+      expect(app.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
+    })
+  })
+
+})
