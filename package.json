@@ -25,6 +25,7 @@
     "bluebird": "^3.4.0",
     "graphql": "^0.6.0",
     "sequelize": "^3.23.3",
+    "toposort-class": "^1.0.1",
     "underscore": "^1.8.3"
   }
 }
