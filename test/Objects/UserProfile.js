@@ -5,23 +5,17 @@ module.exports = {
   attributes: {
     id:{
       type: 'integer',
-      description: 'Identifier for ObjectAs',
-      primaryKey: true,
-      autoIncrement: true
-    },
-    userId:{
-      type: 'integer',
-      description: 'Identifier for ObjectAs',
+      description: 'Identifier for Profile',
       primaryKey: true,
       autoIncrement: true
     },
     firstName: {
       type: 'string',
-      description: 'An alias for ObjectA'
+      description: 'FirstName of User'
     },
     lastName: {
       type: 'string',
-      description: 'An alias for ObjectA'
+      description: 'LastName of User'
     }
   }
 }

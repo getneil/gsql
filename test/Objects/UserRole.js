@@ -10,15 +10,13 @@ module.exports = {
       autoIncrement: true
     },
     type: {
-      type: 'string',
+      type: 'enum',
+      enum: ['admin', 'regular'], // or { admin: 'admin', regular: 'regular'} to be converted to graphQL option
       description: 'An alias for ObjectA',
-      unique: true,
-      validate: {
-        isEmail: true
-      }
     },
     userId: {
-      type: 'integer'
+      type: 'integer',
+      object: 'User'
     }
   }
 }

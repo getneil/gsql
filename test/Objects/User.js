@@ -1,17 +1,25 @@
 'use strict';
+const crypto = require('crypto');
+const secret = 'abcdefg';
 
+const encryptPassword = (user, options) => {
+  let hash = crypto.createHmac('sha256', secret)
+                     .update(user.password)
+                     .digest('hex');
+  user.password = hash;
+}
 module.exports = {
-  description: 'Details of the user account',
+  description: 'Details of the user account used for login credentials.',
   attributes: {
     id:{
       type: 'integer',
-      description: 'Identifier for ObjectAs',
+      description: 'Identifier for User',
       primaryKey: true,
       autoIncrement: true
     },
     email: {
       type: 'string',
-      description: 'An alias for ObjectA',
+      description: 'Email of user can be used for logging in.',
       unique: true,
       validate: {
         isEmail: true
@@ -19,10 +27,30 @@ module.exports = {
     },
     password: {
       type: 'string',
-      description: 'Password for this account',
+      description: 'Password for this account should be hashed by Bcrypt.',
       validate: {
         notEmpty: true
       }
+    },
+    profileId:{
+      type: 'integer',
+      object: 'UserProfile'
+    },
+    roles:{
+      list: 'UserRole',
+      via: 'userId' // a direct 1:n relationship connection via FK as userId
+    },
+    teams:{
+      list: 'Team',
+      through: 'Membership' // a n:n relationship using another Membershi object
+    }
+  },
+  config:{
+    tableName: 'users',
+    freezeTableName: true,
+    hooks:{
+      beforeUpdate: encryptPassword,
+      beforeCreate: encryptPassword
     }
   }
 }
