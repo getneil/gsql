@@ -4,36 +4,19 @@ var Gsql = require('../'),
     storage: 'memory'
   });
 
-const User = gsql.define('User',{
-  description: 'Details of the user account',
-  attributes: {
-    id:{
-      type: 'integer',
-      description: 'Identifier for ObjectAs',
-      primaryKey: true,
-      autoIncrement: true
-    },
-    email: {
-      type: 'string',
-      description: 'An alias for ObjectA',
-      unique: true,
-      validate: {
-        isEmail: true
-      }
-    },
-    password: {
-      type: 'string',
-      description: 'Password for this account',
-      validate: {
-        notEmpty: true
-      }
-    }
-  }
-});
+const config = {
+  User:  require('./Objects/User.js'),
+  UserProfile: require('./Objects/UserProfile.js'),
+  UserRole: require('./Objects/UserRole.js'),
+  Team: require('./Objects/Team.js'),
+  Membership: require('./Objects/Membership.js')
+}
 
+const models = {};
+Object.keys(config).forEach((k)=>{
+  models[k] = gsql.define(k, config[k]);
+})
 module.exports = {
   gi: gsql, // GsqlInstance
-  models:{
-    User: User
-  }
+  models: models
 }

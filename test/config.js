@@ -56,7 +56,7 @@ describe('GSQL Define() :',function(){
       expect(app.models.User).to.be.an.instanceof(GsqlModelClass);
     })
     it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
-      var sequelizeModelClass = require('../node_modules/sequelize/lib/model/attributes.js');
+      var sequelizeModelClass = require('../node_modules/sequelize/lib/model/attribute.js');
       expect(app.models.User.sequelize).to.be.an.instanceof(sequelizeModelClass);
     })
     it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
