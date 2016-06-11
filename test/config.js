@@ -21,6 +21,22 @@ describe('GSQL config:', function(){
   it('should return the Sequelize connection object', function(){
     expect(app.gi.connection).to.be.an.instanceof(Sequelize);
   })
+  it('should pass a connection test: seqeuelize.authenticate()', function(done){
+
+    var connected = false,
+      test =  function(){
+        expect(connected).to.equal(true);
+        done();
+      }
+
+    app.gi.connection.authenticate()
+    .then(()=>{
+      connected = true;
+      test();
+    })
+    .catch(test);
+
+  })
   it('should have a linkObjects method', function(){
     // this will initialize the association/relationship of the Sequelize models
     // will also be used by graphQL to establish type relation among objects
@@ -49,6 +65,72 @@ describe('GSQL Define() :',function(){
     expect(testDefineError.empty).to.throw('modelName is not defined.');
     expect(testDefineError.nameOnly).to.throw('Model configuration is not defined.');
     expect(testDefineError.completeButNoAttributes).to.throw('No Model attributes found in the configuration.');
+  });
+
+  it('should not include incorrectly defined Objects in the Gsql.models', function(){
+
+    app.gi.define('BadObject',{
+      attributes: {
+        id: {
+          type: 'integerr', // intentional wrong type
+          primaryKey: true,
+          autoIncrement: true
+        }
+      }
+    });
+    expect(app.gi.models.BadObject).to.be.an('undefined');
+  });
+
+  it('should throw error if incorrect attribute type is provided to a model and show what attribute is wrong in what object', function(){
+
+    let badType = function(){
+      app.gi.define('Test',{
+        attributes: {
+          id: {
+            type: 'integerr', // intentional wrong type
+            primaryKey: true,
+            autoIncrement: true
+          }
+        }
+      })
+    };
+    expect(badType).to.throw('Object(Test) attribute(id) has an incorrect type: integerr');
+  });
+
+  describe('should apply proper Seqeuelize Types to model: ', function(){
+    /*
+    limited type testing for now, this are just the types I find necessary
+    */
+    const types = {
+      integer: {
+        type: 'integer',
+        primaryKey: true // required
+      },
+      string: {
+        type: 'string'
+      },
+      float: {
+        type: 'float'
+      },
+      boolean: {
+        type: 'boolean'
+      },
+      date: {
+        type: 'date'
+      },
+      time: {
+        type: 'time'
+      }
+    }
+    let testObject = app.gi.define('TestSequelizeTypes',{
+      attributes: types
+    });
+    Object.keys(types).forEach((type)=>{
+      it(`should assign proper Sequelize Type of ${type} to attributes.`, function(){
+        expect(testObject.attributes[type].type).to.be.an.instanceof(Sequelize[type.toUpperCase()]);
+      });
+    });
+
   });
 
   describe('should return a proper GSQL Model', function(){

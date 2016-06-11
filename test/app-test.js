@@ -1,3 +1,4 @@
+'use strict';
 var Gsql = require('../'),
   gsql = new Gsql('database', 'username', 'password', {
     dialect: 'sqlite',
@@ -15,7 +16,9 @@ const config = {
 const models = {};
 Object.keys(config).forEach((k)=>{
   models[k] = gsql.define(k, config[k]);
-})
+});
+
+
 module.exports = {
   gi: gsql, // GsqlInstance
   models: models
