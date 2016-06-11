@@ -1,8 +1,10 @@
+'use strict';
 var Gsql = require('../'),
   gsql = new Gsql('database', 'username', 'password', {
     dialect: 'sqlite',
     storage: 'memory'
   });
+var Sequelize = require('sequelize');
 
 const config = {
   User:  require('./Objects/User.js'),
@@ -15,7 +17,8 @@ const config = {
 const models = {};
 Object.keys(config).forEach((k)=>{
   models[k] = gsql.define(k, config[k]);
-})
+});
+
 module.exports = {
   gi: gsql, // GsqlInstance
   models: models
