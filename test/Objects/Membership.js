@@ -1,18 +1,19 @@
 'use strict';
+var Sequelize = require('sequelize');
 module.exports = {
   description: 'Establishes the relationship of User and Team',
   attributes: {
     id:{
-      type: 'integer',
+      type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
     userId: {
-      type: 'integer',
+      type: Sequelize.INTEGER,
       object: 'User'
     },
     teamId: {
-      type: 'integer',
+      type: Sequelize.INTEGER,
       object: 'Team'
     }
   }

@@ -1,4 +1,5 @@
 'use strict';
+var Sequelize = require('sequelize');
 const crypto = require('crypto');
 const secret = 'abcdefg';
 
@@ -12,13 +13,13 @@ module.exports = {
   description: 'Details of the user account used for login credentials.',
   attributes: {
     id:{
-      type: 'integer',
+      type: Sequelize.INTEGER,
       description: 'Identifier for User',
       primaryKey: true,
       autoIncrement: true
     },
     email: {
-      type: 'string',
+      type: Sequelize.STRING,
       description: 'Email of user can be used for logging in.',
       unique: true,
       validate: {
@@ -26,14 +27,14 @@ module.exports = {
       }
     },
     password: {
-      type: 'string',
+      type: Sequelize.STRING,
       description: 'Password for this account should be hashed by Bcrypt.',
       validate: {
         notEmpty: true
       }
     },
     profileId:{
-      type: 'integer',
+      type: Sequelize.INTEGER,
       object: 'UserProfile'
     },
     roles:{

@@ -18,7 +18,6 @@ Object.keys(config).forEach((k)=>{
   models[k] = gsql.define(k, config[k]);
 });
 
-
 module.exports = {
   gi: gsql, // GsqlInstance
   models: models

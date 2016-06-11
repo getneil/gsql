@@ -72,7 +72,7 @@ describe('GSQL Define() :',function(){
     app.gi.define('BadObject',{
       attributes: {
         id: {
-          type: 'integerr', // intentional wrong type
+          type: Sequelize.INTEGERR, // intentional wrong type
           primaryKey: true,
           autoIncrement: true
         }
@@ -87,7 +87,7 @@ describe('GSQL Define() :',function(){
       app.gi.define('Test',{
         attributes: {
           id: {
-            type: 'integerr', // intentional wrong type
+            type: Sequelize.INTEGERR, // intentional wrong type
             primaryKey: true,
             autoIncrement: true
           }
@@ -97,29 +97,29 @@ describe('GSQL Define() :',function(){
     expect(badType).to.throw('Object(Test) attribute(id) has an incorrect type: integerr');
   });
 
-  describe('should apply proper Seqeuelize Types to model: ', function(){
+  describe('should apply properly apply Seqeuelize Types to model: ', function(){
     /*
     limited type testing for now, this are just the types I find necessary
     */
     const types = {
       integer: {
-        type: 'integer',
+        type: Sequelize.INTEGER,
         primaryKey: true // required
       },
       string: {
-        type: 'string'
+        type: Sequelize.STRING
       },
       float: {
-        type: 'float'
+        type: Sequelize.FLOAT
       },
       boolean: {
-        type: 'boolean'
+        type: Sequelize.BOOLEAN
       },
       date: {
-        type: 'date'
+        type: Sequelize.DATE
       },
       time: {
-        type: 'time'
+        type: Sequelize.TIME
       }
     }
     let testObject = app.gi.define('TestSequelizeTypes',{
