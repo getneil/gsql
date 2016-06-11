@@ -130,4 +130,5 @@ describe('GSQL Define() :',function(){
     })
   })
 
+  console.log(app.gi.models);
 })
