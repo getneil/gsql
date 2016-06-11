@@ -15,7 +15,7 @@ module.exports = {
       description: 'An alias for ObjectA',
     },
     userId: {
-      type: 'integer',
+      type: Sequelize.INTEGER,
       object: 'User'
     }
   }

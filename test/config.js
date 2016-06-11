@@ -6,8 +6,6 @@ var app = require('./app-test.js')
   , GsqlModelClass = require('../lib/model.js')
   , Sequelize = require('sequelize');
 
-
-
 describe('GSQL config:', function(){
 
   it('should be an instance of Gsql', function(){
@@ -67,22 +65,8 @@ describe('GSQL Define() :',function(){
     expect(testDefineError.completeButNoAttributes).to.throw('No Model attributes found in the configuration.');
   });
 
-  it('should not include incorrectly defined Objects in the Gsql.models', function(){
 
-    app.gi.define('BadObject',{
-      attributes: {
-        id: {
-          type: Sequelize.INTEGERR, // intentional wrong type
-          primaryKey: true,
-          autoIncrement: true
-        }
-      }
-    });
-    expect(app.gi.models.BadObject).to.be.an('undefined');
-  });
-
-  it('should throw error if incorrect attribute type is provided to a model and show what attribute is wrong in what object', function(){
-
+  it('should throw error if incorrect attribute type is provided to a model and show what attribute is wrong in what object but also do not declare it in GSQL.models dictionary', function(){
     let badType = function(){
       app.gi.define('Test',{
         attributes: {
@@ -94,56 +78,55 @@ describe('GSQL Define() :',function(){
         }
       })
     };
-    expect(badType).to.throw('Object(Test) attribute(id) has an incorrect type: integerr');
+    expect(badType).to.throw('Object(Test) attribute(id) has an undefined type');
+    expect(app.gi.models.BadObject).to.be.an('undefined'); //'should not include incorrectly defined Objects in the Gsql.models'
   });
 
-  describe('should apply properly apply Seqeuelize Types to model: ', function(){
-    /*
-    limited type testing for now, this are just the types I find necessary
-    */
-    const types = {
-      integer: {
-        type: Sequelize.INTEGER,
-        primaryKey: true // required
-      },
-      string: {
-        type: Sequelize.STRING
-      },
-      float: {
-        type: Sequelize.FLOAT
-      },
-      boolean: {
-        type: Sequelize.BOOLEAN
-      },
-      date: {
-        type: Sequelize.DATE
-      },
-      time: {
-        type: Sequelize.TIME
+  it('should detect if duplicate model exists and has been defined twice.', function(){
+    let objName = 'ObjectAAA';
+    app.gi.define(objName,{
+      attributes: {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        }
       }
-    }
-    let testObject = app.gi.define('TestSequelizeTypes',{
-      attributes: types
-    });
-    Object.keys(types).forEach((type)=>{
-      it(`should assign proper Sequelize Type of ${type} to attributes.`, function(){
-        expect(testObject.attributes[type].type).to.be.an.instanceof(Sequelize[type.toUpperCase()]);
-      });
-    });
-
+    })
+    let duplicate = function(){
+      app.gi.define(objName,{
+        attributes: {
+          id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          }
+        }
+      })
+    };
+    expect(app.gi.models).not.to.be.undefined;
+    expect(duplicate).to.throw(`Object(${objName}) has been defined twice.`);
   });
-
   describe('should return a proper GSQL Model', function(){
+
+    app.gi.define('NewUser',{
+      attributes:{
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true
+        }
+      }
+    })
+
     it('should be an instance of GSQL model', function(){
-      expect(app.models.User).to.be.an.instanceof(GsqlModelClass);
+      expect(app.gi.models.NewUser).to.be.an.instanceof(GsqlModelClass);
     })
     it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
-      var sequelizeModelClass = require('../node_modules/sequelize/lib/model/attribute.js');
-      expect(app.models.User.sequelize).to.be.an.instanceof(sequelizeModelClass);
+      expect(app.gi.models.NewUser.sequelize).to.be.an.instanceof(Sequelize.Model);
     })
     it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
       var graphqlModelClass = "";
-      expect(app.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
+      expect(app.gi.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
     })
   })
 

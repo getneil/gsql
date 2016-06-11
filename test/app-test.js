@@ -4,6 +4,7 @@ var Gsql = require('../'),
     dialect: 'sqlite',
     storage: 'memory'
   });
+var Sequelize = require('sequelize');
 
 const config = {
   User:  require('./Objects/User.js'),
