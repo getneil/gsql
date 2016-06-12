@@ -62,7 +62,7 @@ describe('GSQL Model and Gsql.define() :',function(){
 
   });
 
-  it('dependency checker to identify correct dependencies depending on attributes defined', function(){
+  it('Direct Test: dependency checker to identify correct dependencies depending on attributes defined', function(){
     let mockObjects = {
       User:{
         attributes:{
@@ -97,7 +97,7 @@ describe('GSQL Model and Gsql.define() :',function(){
           },
           userId:{
             type: Sequelize.INTEGER,
-            object: 'Team'
+            object: 'User'
           }
         },
         dependencies:['User','Team']
@@ -124,7 +124,7 @@ describe('GSQL Model and Gsql.define() :',function(){
 
   })
 
-  describe('should define the proper dependency of object:',function(){
+  describe('Indirect Test: should define the proper dependency of object:',function(){
     let dependencyTree = {
       User: ['UserProfile'],
       Team: [],
