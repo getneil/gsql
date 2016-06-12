@@ -3,7 +3,8 @@ const app = require('./app-test.js');
 const expect = require('chai').expect;
 const requiredDirectory = require('require-dir');
 const modelFiles = requiredDirectory('./Objects', {recurse: true});
-const GsqlModelClass = require('../lib/model.js')
+const GsqlModelClass = require('../lib/model.js');
+const tools = require('../lib/tools.js');
 
 describe('ModelManager:',function(){
   it('should be defined in the gsql instance and should be an instance of model-manager', function(){
@@ -30,11 +31,10 @@ describe('ModelManager:',function(){
   })
 
 
-
+  let sequence = ['UserProfile','User','Team','Membership','UserRole'];
   // expectation is depending on the structure of the app in ./Objects
   it("should determine the proper dependency hierarchy",()=>{
-    let sequence = ['UserProfile','User','Team','Membership','UserRole'],
-      syncSequence = app.gi.modelManager.getSyncSequence(),
+    let syncSequence = app.gi.modelManager.getSyncSequence(),
       inOrder = true;
 
       sequence.forEach((expectedObject,index)=>{
@@ -48,7 +48,18 @@ describe('ModelManager:',function(){
     expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;
     app.gi.modelManager.initializeDatabase()
-    .then(function(){
+    .then(function(data){
+      let notFound = false;
+      sequence.forEach((k)=>{
+        let seqName = tools.camelTo_(k).toLowerCase();
+        let found = data.find((obj)=>{
+          return obj.name === seqName;
+        })
+        if(!found){
+          notFound = true;
+        }
+      });
+      expect(notFound).to.equal(false);
       expect(noError).to.equal(true);
       done()
     })
@@ -60,13 +71,6 @@ describe('ModelManager:',function(){
 
   });
 
-  describe('should initialize database properly by veryfying created tables', function(){
-
-
-    it('should have all the expected tables',function(){
-
-    })
-  })
   describe('should correctly establish relationship among models', function(){
     it("",()=>{
 
