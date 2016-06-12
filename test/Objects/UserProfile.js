@@ -17,6 +17,10 @@ module.exports = {
     lastName: {
       type: Sequelize.STRING,
       description: 'LastName of User'
+    },
+    userId:{
+      type: Sequelize.INTEGER,
+      object: 'User'
     }
   }
 }

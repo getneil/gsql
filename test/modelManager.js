@@ -31,12 +31,11 @@ describe('ModelManager:',function(){
   })
 
 
-  let sequence = ['UserProfile','User','Team','Membership','UserRole'];
+  let sequence = [ 'User', 'Team', 'Membership', 'UserProfile', 'UserRole' ];
   // expectation is depending on the structure of the app in ./Objects
   it("should determine the proper dependency hierarchy",()=>{
     let syncSequence = app.gi.modelManager.getSyncSequence(),
       inOrder = true;
-
       sequence.forEach((expectedObject,index)=>{
         if(!syncSequence[index] || syncSequence[index] != expectedObject){
           inOrder = false;

@@ -33,10 +33,6 @@ module.exports = {
         notEmpty: true
       }
     },
-    profileId:{
-      type: Sequelize.INTEGER,
-      object: 'UserProfile'
-    },
     roles:{
       list: 'UserRole',
       via: 'userId' // a direct 1:n relationship connection via FK as userId
