@@ -83,18 +83,9 @@ describe('GSQL Define() :',function(){
   });
 
   it('should detect if duplicate model exists and has been defined twice.', function(){
-    let objName = 'ObjectAAA';
-    app.gi.define(objName,{
-      attributes: {
-        id: {
-          type: Sequelize.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
-        }
-      }
-    })
+
     let duplicate = function(){
-      app.gi.define(objName,{
+      app.gi.define('User',{
         attributes: {
           id: {
             type: Sequelize.INTEGER,
@@ -104,25 +95,18 @@ describe('GSQL Define() :',function(){
         }
       })
     };
-    expect(app.gi.models).not.to.be.undefined;
-    expect(duplicate).to.throw(`Object(${objName}) has been defined twice.`);
+
+    expect(duplicate).to.throw('Object(User) has been defined twice.');
+    expect(app.gi.models.User).not.to.be.undefined;
+
   });
   describe('should return a proper GSQL Model', function(){
 
-    app.gi.define('NewUser',{
-      attributes:{
-        id: {
-          type: Sequelize.INTEGER,
-          primaryKey: true
-        }
-      }
-    })
-
     it('should be an instance of GSQL model', function(){
-      expect(app.gi.models.NewUser).to.be.an.instanceof(GsqlModelClass);
+      expect(app.gi.models.User).to.be.an.instanceof(GsqlModelClass);
     })
     it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
-      expect(app.gi.models.NewUser.sequelize).to.be.an.instanceof(Sequelize.Model);
+      expect(app.gi.models.User.sequelize).to.be.an.instanceof(Sequelize.Model);
     })
     it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
       var graphqlModelClass = "";
@@ -130,5 +114,4 @@ describe('GSQL Define() :',function(){
     })
   })
 
-  console.log(app.gi.models);
 })
