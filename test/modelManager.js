@@ -31,12 +31,11 @@ describe('ModelManager:',function(){
   })
 
 
-  let sequence = ['UserProfile','User','Team','Membership','UserRole'];
+  let sequence = [ 'User', 'Team', 'Membership', 'UserProfile', 'UserRole' ];
   // expectation is depending on the structure of the app in ./Objects
   it("should determine the proper dependency hierarchy",()=>{
     let syncSequence = app.gi.modelManager.getSyncSequence(),
       inOrder = true;
-
       sequence.forEach((expectedObject,index)=>{
         if(!syncSequence[index] || syncSequence[index] != expectedObject){
           inOrder = false;
@@ -44,7 +43,43 @@ describe('ModelManager:',function(){
       })
       expect(inOrder).to.equal(true);
   })
-  it('should have an initializeDatabase function & initialize correctly', function(done){
+
+
+  describe('should register all model relationships of the MockApp', function(){
+    let allAssocs = [];
+    app.gi.modelManager.associateObjects();
+
+
+    it('count if all objects to be under ModelManager.associationDictionary', function(){
+      Object.keys(app.gi.models).forEach((objectName)=>{
+        allAssocs = allAssocs.concat(app.gi.models[objectName].association);
+      });
+      expect(Object.keys(app.gi.modelManager.associationDictionary)).to.have.lengthOf(allAssocs.length);
+    })
+
+    describe('should have all expected relationships', function(){
+      let expectedRelationships = [
+        'User hasMany UserRole',
+        'User belongsToMany Team',
+        'UserProfile belongsTo User',
+        'Team belongsToMany User',
+        'UserRole belongsTo User',
+        'Membership belongsTo User',
+        'Membership belongsTo Team'
+      ];
+      console.log(app.gi.modelManager.associationDictionary);
+      expectedRelationships.forEach((rel)=>{
+        it(`${rel} should exist`,function(){
+          expect(app.gi.modelManager.associationDictionary[rel]).not.to.be.undefined;
+        })
+      })
+    });
+    /*
+    creates the correct relationship dictionary with its correspond Sequelize relationship
+    */
+  })
+
+  it('should have an initializeDatabase function & initialize it correctly', function(done){
     expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;
     app.gi.modelManager.initializeDatabase()
@@ -71,14 +106,6 @@ describe('ModelManager:',function(){
 
   });
 
-  describe('should correctly establish relationship among models', function(){
-    it("",()=>{
-
-    })
-    /*
-    creates the correct relationship dictionary with its correspond Sequelize relationship
-    */
-  })
 
 
 })

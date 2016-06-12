@@ -4,7 +4,8 @@ var expect = require('chai').expect;
 var app = require('./app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
   , GsqlModelClass = require('../lib/model.js')
-  , Sequelize = require('sequelize');
+  , Sequelize = require('sequelize')
+  , tools = require('../lib/tools.js');
 
 
 describe('GSQL Model and Gsql.define() :',function(){
@@ -72,15 +73,15 @@ describe('GSQL Model and Gsql.define() :',function(){
           },
           profileId:{
             type: Sequelize.INTEGER,
-            object: 'UserProfile'
+            belongsTo: 'UserProfile'
           },
           teams:{
-            list: 'Team',
+            hasMany: 'Team',
             through: 'Membership' // a n:n relationship using another Membershi object
           },
           roles:{
-            list: 'UserRole',
-            via: 'userId'
+            hasMany: 'UserRole',
+            foreignKey: 'userId'
           }
         },
         dependencies: ['UserProfile']
@@ -93,11 +94,11 @@ describe('GSQL Model and Gsql.define() :',function(){
           },
           teamId:{
             type: Sequelize.INTEGER,
-            object: 'Team'
+            belongsTo: 'Team'
           },
           userId:{
             type: Sequelize.INTEGER,
-            object: 'User'
+            belongsTo: 'User'
           }
         },
         dependencies:['User','Team']
@@ -108,7 +109,7 @@ describe('GSQL Model and Gsql.define() :',function(){
             type: Sequelize.INTEGER
           },
           members: {
-            list: 'User',
+            hasMany: 'User',
             through: 'Membership'
           }
         },
@@ -124,12 +125,81 @@ describe('GSQL Model and Gsql.define() :',function(){
 
   })
 
+  describe('Direct Test: Model.assocation() should be able to create a list of assocations', function(){
+    let mockAttributes = {
+      id:{
+        type: Sequelize.INTEGER,
+        primaryKey: true
+      },
+      profileId:{
+        type: Sequelize.INTEGER,
+        belongsTo: 'UserProfile'
+      },
+      teams:{
+        belongsToMany: 'Team',
+        through: 'Membership' // a n:n relationship using another Membershi object
+      },
+      roles:{
+        hasMany: 'UserRole',
+        foreignKey: 'userId'
+      }
+    }
+
+    let expectedResults = [
+      {
+        sourceName: 'User',
+        type: 'belongsTo',
+        targetName: 'UserProfile',
+        config:{
+          foreignKey: 'profileId'
+        }
+      },
+      {
+        sourceName: 'User',
+        type: 'belongsToMany',
+        targetName: 'Team',
+        config:{
+          throughName: 'Membership'
+        }
+      },
+      {
+        sourceName: 'User',
+        type: 'hasMany',
+        targetName: 'UserRole',
+        config:{
+          foreignKey: 'userId'
+        }
+      },
+    ]
+
+    let strSort = (a,b)=>{
+      let aStr = tools.associationStringName(a),
+        bStr = tools.associationStringName(b);
+      return aStr.localeCompare(bStr);
+    }
+    expectedResults.sort(strSort);
+
+    let actualResults = GsqlModelClass.defineRelationships('User',mockAttributes);
+    actualResults.sort(strSort);
+
+    it('mock attributes should generate 3 relationships', function(){
+      expect(actualResults).to.have.lengthOf(3);
+    })
+    expectedResults.forEach((expectedResult,i)=>{
+      it(`${expectedResult.sourceName} ${expectedResult.type} ${expectedResult.targetName} should exist.`,function(){
+        expect(actualResults[i]).to.deep.equal(expectedResult);
+      })
+    });
+
+
+  })
+
   describe('Indirect Test: should define the proper dependency of object:',function(){
     let dependencyTree = {
-      User: ['UserProfile'],
+      User: [],
       Team: [],
       Membership: ['User','Team'],
-      UserProfile: [],
+      UserProfile: ['User'],
       UserRole: ['User']
     }
 
@@ -150,6 +220,9 @@ describe('GSQL Model and Gsql.define() :',function(){
     })
     it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
       expect(app.gi.models.User.sequelize).to.be.an.instanceof(Sequelize.Model);
+    })
+    it('with a dictionary of association', function(){
+      expect(typeof app.gi.models.User.association).to.be.equal('object');
     })
     it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
       var graphqlModelClass = "";

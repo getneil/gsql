@@ -2,7 +2,8 @@
 var expect = require('chai').expect
   , Sequelize = require('sequelize');
 
-var GsqlModel = require('../lib/model.js');
+var GsqlModel = require('../lib/model.js'),
+  tools = require('../lib/tools.js');
 
 const sampleAttributes = {
   id:{
@@ -39,4 +40,18 @@ describe('GSQL: Model',function(){
     let memberIndex = Object.keys(GsqlModel.defineSequelizeAttributes(sampleAttributes)).indexOf('members');
     expect(memberIndex).to.equal(-1);
   })
+})
+
+describe('tools.associationStringName should be working correctly "sourceName relationshipType targetName" ',function(){
+
+  let exampleObject = {
+    target: new Object(),
+    source: new Object(),
+    targetName: 'Role',
+    sourceName: 'User',
+    type: 'hasMany'
+  }
+
+  expect(tools.associationStringName(exampleObject)).to.equal('User hasMany Role');
+
 })
