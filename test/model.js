@@ -134,10 +134,8 @@ describe('GSQL Model and Gsql.define() :',function(){
     }
 
     Object.keys(dependencyTree).forEach((objectName)=>{
-      it(`${objectName} to have ${dependencyTree[objectName].join(', ')}`, function(){
-
-        let appDefinedDependency = app.gi.models[objectName].dependency;
-
+      it(`${objectName} requires ${dependencyTree[objectName].length ? dependencyTree[objectName]: 'no dependency'}`, function(){
+        let appDefinedDependency = app.gi.models[objectName].requires;
         expect(appDefinedDependency).to.have.lengthOf(dependencyTree[objectName].length);
         expect(appDefinedDependency).to.have.members(dependencyTree[objectName]);
       })
