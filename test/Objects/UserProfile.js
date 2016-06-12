@@ -20,7 +20,7 @@ module.exports = {
     },
     userId:{
       type: Sequelize.INTEGER,
-      object: 'User'
+      belongsTo: 'User'
     }
   }
 }

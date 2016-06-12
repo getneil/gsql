@@ -4,7 +4,8 @@ var expect = require('chai').expect;
 var app = require('./app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
   , GsqlModelClass = require('../lib/model.js')
-  , Sequelize = require('sequelize');
+  , Sequelize = require('sequelize')
+  , tools = require('../lib/tools.js');
 
 
 describe('GSQL Model and Gsql.define() :',function(){
@@ -72,15 +73,15 @@ describe('GSQL Model and Gsql.define() :',function(){
           },
           profileId:{
             type: Sequelize.INTEGER,
-            object: 'UserProfile'
+            belongsTo: 'UserProfile'
           },
           teams:{
-            list: 'Team',
+            hasMany: 'Team',
             through: 'Membership' // a n:n relationship using another Membershi object
           },
           roles:{
-            list: 'UserRole',
-            via: 'userId'
+            hasMany: 'UserRole',
+            foreignKey: 'userId'
           }
         },
         dependencies: ['UserProfile']
@@ -93,11 +94,11 @@ describe('GSQL Model and Gsql.define() :',function(){
           },
           teamId:{
             type: Sequelize.INTEGER,
-            object: 'Team'
+            belongsTo: 'Team'
           },
           userId:{
             type: Sequelize.INTEGER,
-            object: 'User'
+            belongsTo: 'User'
           }
         },
         dependencies:['User','Team']
@@ -108,7 +109,7 @@ describe('GSQL Model and Gsql.define() :',function(){
             type: Sequelize.INTEGER
           },
           members: {
-            list: 'User',
+            hasMany: 'User',
             through: 'Membership'
           }
         },
@@ -124,7 +125,7 @@ describe('GSQL Model and Gsql.define() :',function(){
 
   })
 
-  it('Direct Test: Model.assocation() should be able to create a dictionary of assocations', function(){
+  describe('Direct Test: Model.assocation() should be able to create a list of assocations', function(){
     let mockAttributes = {
       id:{
         type: Sequelize.INTEGER,
@@ -132,36 +133,65 @@ describe('GSQL Model and Gsql.define() :',function(){
       },
       profileId:{
         type: Sequelize.INTEGER,
-        object: 'UserProfile'
+        belongsTo: 'UserProfile'
       },
       teams:{
-        list: 'Team',
+        belongsToMany: 'Team',
         through: 'Membership' // a n:n relationship using another Membershi object
       },
       roles:{
-        list: 'UserRole',
-        via: 'userId'
+        hasMany: 'UserRole',
+        foreignKey: 'userId'
       }
     }
 
-    let expectedResult = {
-      belongsTo:{
-        'UserProfile':{
-          as: 'profileId'
+    let expectedResults = [
+      {
+        sourceName: 'User',
+        type: 'belongsTo',
+        targetName: 'UserProfile',
+        config:{
+          foreignKey: 'profileId'
         }
       },
-      hasMany: {
-        'UserRole':{
-          via: 'userId'
-        },
-        'Team':{
-          through: 'Membership'
+      {
+        sourceName: 'User',
+        type: 'belongsToMany',
+        targetName: 'Team',
+        config:{
+          throughName: 'Membership'
         }
-      }
-    }
+      },
+      {
+        sourceName: 'User',
+        type: 'hasMany',
+        targetName: 'UserRole',
+        config:{
+          foreignKey: 'userId'
+        }
+      },
+    ]
 
-    let actualResult = GsqlModelClass.defineRelationships(mockAttributes);
-    expect(actualResult).to.deep.equal(expectedResult);
+    let strSort = (a,b)=>{
+      let aStr = tools.associationStringName(a),
+        bStr = tools.associationStringName(b);
+      return aStr.localeCompare(bStr);
+    }
+    expectedResults.sort(strSort);
+
+    let actualResults = GsqlModelClass.defineRelationships('User',mockAttributes);
+    actualResults.sort(strSort);
+
+    it('mock attributes should generate 3 relationships', function(){
+      expect(actualResults).to.have.lengthOf(3);
+    })
+    expectedResults.forEach((expectedResult,i)=>{
+      it(`${expectedResult.sourceName} ${expectedResult.type} ${expectedResult.targetName} should exist.`,function(){
+        expect(actualResults[i]).to.deep.equal(expectedResult);
+      })
+    });
+
+
   })
 
   describe('Indirect Test: should define the proper dependency of object:',function(){

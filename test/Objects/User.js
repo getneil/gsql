@@ -34,11 +34,11 @@ module.exports = {
       }
     },
     roles:{
-      list: 'UserRole',
-      via: 'userId' // a direct 1:n relationship connection via FK as userId
+      hasMany: 'UserRole',
+      foreignKey: 'userId' // a direct 1:n relationship connection via FK as userId
     },
     teams:{
-      list: 'Team',
+      belongsToMany: 'Team',
       through: 'Membership' // a n:n relationship using another Membershi object
     }
   },

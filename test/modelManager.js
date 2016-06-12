@@ -43,6 +43,36 @@ describe('ModelManager:',function(){
       })
       expect(inOrder).to.equal(true);
   })
+
+  it("should be able to create Sequelize relationship list that will be used by GraphQL resolvers", function(){
+    let resultList = app.gi.modelManager.associateObjects();
+
+    let expectedList = [
+      {
+        sourceName: 'User',
+        source: app.gi.models.User,
+        type: 'hasOne',
+        targetName: 'UserProfile',
+        target: app.gi.models.UserProfile,
+        config: {
+          as: 'userId'
+        }
+      },
+      {
+        sourceName: 'User',
+        source: app.gi.models.User,
+        type: 'hasMany',
+        targetName: 'UserRole',
+        target: app.gi.models.UserRole,
+        config: {
+          via: 'userId'
+        }
+      }
+    ];
+
+    expect(resultList[0]).to.deep.equal(expectedList[1]);
+  })
+
   it('should have an initializeDatabase function & initialize correctly', function(done){
     expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;

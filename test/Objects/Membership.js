@@ -10,11 +10,11 @@ module.exports = {
     },
     userId: {
       type: Sequelize.INTEGER,
-      object: 'User'
+      belongsTo: 'User'
     },
     teamId: {
       type: Sequelize.INTEGER,
-      object: 'Team'
+      belongsTo: 'Team'
     }
   }
 }

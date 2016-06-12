@@ -13,7 +13,7 @@ module.exports = {
       type: Sequelize.STRING
     },
     members: {
-      list: 'User',
+      belongsToMany: 'User',
       through: 'Membership'
     }
   }
