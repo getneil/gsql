@@ -67,7 +67,6 @@ describe('ModelManager:',function(){
         'Membership belongsTo User',
         'Membership belongsTo Team'
       ];
-      console.log(app.gi.modelManager.associationDictionary);
       expectedRelationships.forEach((rel)=>{
         it(`${rel} should exist`,function(){
           expect(app.gi.modelManager.associationDictionary[rel]).not.to.be.undefined;
