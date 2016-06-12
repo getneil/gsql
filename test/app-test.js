@@ -5,21 +5,20 @@ var Gsql = require('../'),
     storage: 'memory'
   });
 var Sequelize = require('sequelize');
-
-const config = {
-  User:  require('./Objects/User.js'),
-  UserProfile: require('./Objects/UserProfile.js'),
-  UserRole: require('./Objects/UserRole.js'),
-  Team: require('./Objects/Team.js'),
-  Membership: require('./Objects/Membership.js')
+function camelTo_(str) {
+  return str.replace(/\W+/g, '_')
+            .replace(/([a-z\d])([A-Z])/g, '$1_$2');
 }
 
+const requiredDirectory = require('require-dir');
+const modelFiles = requiredDirectory('./Objects', {recurse: true});
 const models = {};
-Object.keys(config).forEach((k)=>{
-  models[k] = gsql.define(k, config[k]);
-});
+for (var key of Object.keys(modelFiles)) {
+  models[key] = gsql.define(key, modelFiles[key]);
+}
 
 module.exports = {
   gi: gsql, // GsqlInstance
-  models: models
+  models: models,
+  modelManager: gsql.modelManager
 }
