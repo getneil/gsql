@@ -1,5 +1,6 @@
 'use strict';
 const app = require('./app-test.js');
+const expect = require('chai').expect;
 const requiredDirectory = require('require-dir');
 const modelFiles = requiredDirectory('./Objects', {recurse: true});
 const GsqlModelClass = require('../lib/model.js')
@@ -15,7 +16,7 @@ describe('ModelManager:',function(){
   })
 
   // test the mock app
-  describe('should have only the intialized models in Objects folder of the Mock App ', function(){
+  describe('should only have the intialized models in Objects folder of the Mock App ', function(){
     Object.keys(modelFiles).forEach((modelName)=>{
       it(`${modelName} should exist`, function(){
         let modelTest = app.gi.modelManager.models[modelName];
@@ -30,7 +31,7 @@ describe('ModelManager:',function(){
 
   // expectation is depending on the structure of the app in ./Objects
   it("should determine the proper dependency hierarchy",()=>{
-    let sequence = ['User','Team','UserProfile','UserRole','Membership'],
+    let sequence = ['UserProfile','Team','User','UserRole','Membership'],
       syncSequence = app.gi.modelManager.getSyncSequence();
       expect(syncSequence).to.equal(sequence);
   })
