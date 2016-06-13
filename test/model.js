@@ -224,10 +224,22 @@ describe('GSQL Model and Gsql.define() :',function(){
     it('with a dictionary of association', function(){
       expect(typeof app.gi.models.User.association).to.be.equal('object');
     })
-    it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
-      var graphqlModelClass = "";
-      expect(app.gi.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
-    })
+    // removed being done for now in ModelManager test
+    // it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
+    //   var graphqlModelClass = "";
+    //   expect(app.gi.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
+    // })
+  })
+
+
+  it('GSQL.model.defineGraphqlFields() should return the proper expected fields and relationships.',function(){
+    var sampleRawAttributes = {
+      space: 'cake'
+    }, expectedFields = {
+      purple: 'kush'
+    };
+    var graphqlFields = GsqlModelClass.defineGraphqlFields(sampleRawAttributes);
+    expect(graphqlFields).to.deep.equal(expectedFields);
   })
 
 })
