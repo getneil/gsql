@@ -5,7 +5,8 @@ var app = require('./app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
   , GsqlModelClass = require('../lib/model.js')
   , Sequelize = require('sequelize')
-  , tools = require('../lib/tools.js');
+  , tools = require('../lib/tools.js')
+  , GraphQL = require('graphql');
 
 
 describe('GSQL Model and Gsql.define() :',function(){
@@ -232,14 +233,62 @@ describe('GSQL Model and Gsql.define() :',function(){
   })
 
 
-  it('GSQL.model.defineGraphqlFields() should return the proper expected fields and relationships.',function(){
+  describe('Return a correct graphql field by depending on sequelize type',function(){
+    var graphql = {
+      GraphQLString: ['string','char','text','uuid','uuidv1','uuidv4'],
+      GraphQLInt: ['integer','bigint','double'],
+      GraphQLFloat: ['float','real'],
+      GraphQLBoolean: ['boolean'],
+      // ObjectType: ['json','jsonb'] leave this out for now
+    }
+
+    var sequelizeToGraphql = {};
+
     var sampleRawAttributes = {
-      space: 'cake'
-    }, expectedFields = {
-      purple: 'kush'
+      id:{
+        type: Sequelize.INTEGER,
+        primaryKey: true
+      }
     };
+    Object.keys(graphql).forEach((GraphQLType)=>{
+
+      graphql[GraphQLType].forEach((sequelizeType)=>{
+        sampleRawAttributes[sequelizeType] = {
+          type: Sequelize[sequelizeType.toUpperCase()]
+        }
+        sequelizeToGraphql[sequelizeType] = GraphQLType;
+      })
+
+    })
+
     var graphqlFields = GsqlModelClass.defineGraphqlFields(sampleRawAttributes);
-    expect(graphqlFields).to.deep.equal(expectedFields);
+
+    var graphqlQLFieldsResult = Object.keys(graphqlFields);
+
+    it('should return the same number of fields',function(){
+      expect(graphqlQLFieldsResult).to.have.lengthOf(Object.keys(sampleRawAttributes).length);
+    })
+
+    it('should return a GraphQL PrimaryKey/ID type for field(id)', function(){
+      expect(graphqlFields.id.type).to.be.an.instanceof(GraphQL.GraphQLID);
+    })
+
+    Object.keys(sequelizeToGraphql).forEach((field)=>{
+      it(`should return a proper GraphQLType for ${field}`,function(){
+        expect(graphqlFields[field].type).to.be.an.instanceof(GraphQL[sequelizeToGraphql[field]]);
+      })
+    })
+
+    // it('GSQL.model.defineGraphqlFields() should return the proper expected fields and relationships.',function(){
+    //
+    //
+    //
+    //
+    //
+    //
+    //   expect(graphqlFields).to.deep.equal(expectedFields);
+    // })
   })
+
 
 })
