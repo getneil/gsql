@@ -269,15 +269,6 @@ describe('GSQL Model and Gsql.define() :',function(){
       })
     })
 
-    // it('GSQL.model.defineGraphqlFields() should return the proper expected fields and relationships.',function(){
-    //
-    //
-    //
-    //
-    //
-    //
-    //   expect(graphqlFields).to.deep.equal(expectedFields);
-    // })
   })
 
 

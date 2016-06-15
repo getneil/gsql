@@ -16,7 +16,7 @@ const graphqlSequelize = require('graphql-sequelize');
 
 const GraphQLList = graphql.GraphQLList;
 const GraphQLObjectType = graphql.GraphQLObjectType;
-
+const GraphQLSchema = graphql.GraphQLSchema;
 const resolver = graphqlSequelize.resolver;
 const defaultListArgs = graphqlSequelize.defaultListArgs;
 const defaultArgs = graphqlSequelize.defaultArgs;
@@ -210,5 +210,17 @@ describe('Mock GraphQLSchema creation', function(){
     })
   })
 
+  describe('GSQL.defineGraphqlSchema',function(){
+    let getGraphqlQueryFieldsSpy = sinon.spy(app.gi.modelManager,'getGraphqlQueryFields');
 
+    var resultSchema = app.gi.defineGraphqlSchema(rootQueryFieldsConfig);
+
+    it('should trigger the getGraphqlQueryFields() of model manager', function(){
+      expect(getGraphqlQueryFieldsSpy).to.have.been.calledWith(rootQueryFieldsConfig);
+    })
+
+    it('should return a proper graphql schema', function(){
+      expect(resultSchema).to.be.an.instanceof(GraphQLSchema);
+    })
+  })
 })
