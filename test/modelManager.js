@@ -12,7 +12,14 @@ const GsqlModelClass = require('../lib/model.js');
 const tools = require('../lib/tools.js');
 
 const graphql = require('graphql');
+const graphqlSequelize = require('graphql-sequelize');
 
+const GraphQLList = graphql.GraphQLList;
+const GraphQLObjectType = graphql.GraphQLObjectType;
+
+const resolver = graphqlSequelize.resolver;
+const defaultListArgs = graphqlSequelize.defaultListArgs;
+const defaultArgs = graphqlSequelize.defaultArgs;
 
 describe('ModelManager:',function(){
   it('should be defined in the gsql instance and should be an instance of model-manager', function(){
@@ -154,6 +161,54 @@ describe('ModelManager:',function(){
     })
   });
 
+
+
+})
+
+describe('Mock GraphQLSchema creation', function(){
+  let rootQueryFieldsConfig = {
+    user: {
+      type: 'User'
+    },
+    users:{
+      type: 'User',
+      list: true
+    },
+    team: {
+      type: 'Team'
+    },
+    teams: {
+      type: 'Team',
+      list: true
+    }
+  };
+
+  describe('correctly define graphql query fields',function(){
+    let models = app.gi.models;
+    let resultRootQueryFields = app.gi.modelManager.getGraphqlQueryFields(rootQueryFieldsConfig);
+    Object.keys(rootQueryFieldsConfig).forEach((field)=>{
+
+      var isList = rootQueryFieldsConfig[field].list
+        , result = resultRootQueryFields[field];
+
+      it(`"${field}" query field should be defined`,function(){
+        expect(result).to.not.be.undefined;
+      })
+
+      if(isList){
+
+        it(`should return a proper list query field for ${field}`,function(){
+          expect(result.args.limit).to.not.be.undefined;
+          expect(result.type).to.have.instanceof(GraphQLList);
+        })
+      }else{
+        it(`should return a proper object type query field for ${field}`,function(){
+          expect(result.args.where).to.not.be.undefined;
+          expect(result.type).to.have.instanceof(GraphQLObjectType);
+        })
+      }
+    })
+  })
 
 
 })
