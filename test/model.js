@@ -1,7 +1,7 @@
 'use strict';
 var expect = require('chai').expect;
 
-var app = require('./app-test.js')
+var app = require('../sample/app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
   , GsqlModelClass = require('../lib/model.js')
   , Sequelize = require('sequelize')
@@ -269,15 +269,6 @@ describe('GSQL Model and Gsql.define() :',function(){
       })
     })
 
-    // it('GSQL.model.defineGraphqlFields() should return the proper expected fields and relationships.',function(){
-    //
-    //
-    //
-    //
-    //
-    //
-    //   expect(graphqlFields).to.deep.equal(expectedFields);
-    // })
   })
 
 
