@@ -1,5 +1,5 @@
 'use strict';
-const app = require('./app-test.js');
+const app = require('../sample/app-test.js');
 const chai = require('chai');
 const expect = chai.expect;
 const spy = chai.spy;
@@ -7,7 +7,7 @@ const sinon = require("sinon");
 const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const requiredDirectory = require('require-dir');
-const modelFiles = requiredDirectory('./Objects', {recurse: true});
+const modelFiles = requiredDirectory('../sample/Objects', {recurse: true});
 const GsqlModelClass = require('../lib/model.js');
 const tools = require('../lib/tools.js');
 

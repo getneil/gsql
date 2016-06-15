@@ -11,11 +11,12 @@ function camelTo_(str) {
 }
 
 const requiredDirectory = require('require-dir');
-const modelFiles = requiredDirectory('./Objects', {recurse: true});
+const modelFiles = requiredDirectory('../sample/Objects', {recurse: true});
 const models = {};
 for (var key of Object.keys(modelFiles)) {
   models[key] = gsql.define(key, modelFiles[key]);
 }
+
 
 module.exports = {
   gi: gsql, // GsqlInstance

@@ -1,7 +1,7 @@
 'use strict';
 var expect = require('chai').expect;
 
-var app = require('./app-test.js')
+var app = require('../sample/app-test.js')
   , GsqlRaw = require('../lib/gsql.js')
   , GsqlModelClass = require('../lib/model.js')
   , Sequelize = require('sequelize')
