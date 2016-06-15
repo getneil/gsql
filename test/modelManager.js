@@ -1,10 +1,18 @@
 'use strict';
 const app = require('./app-test.js');
-const expect = require('chai').expect;
+const chai = require('chai');
+const expect = chai.expect;
+const spy = chai.spy;
+const sinon = require("sinon");
+const sinonChai = require("sinon-chai");
+chai.use(sinonChai);
 const requiredDirectory = require('require-dir');
 const modelFiles = requiredDirectory('./Objects', {recurse: true});
 const GsqlModelClass = require('../lib/model.js');
 const tools = require('../lib/tools.js');
+
+const graphql = require('graphql');
+
 
 describe('ModelManager:',function(){
   it('should be defined in the gsql instance and should be an instance of model-manager', function(){
@@ -45,18 +53,27 @@ describe('ModelManager:',function(){
   })
 
 
+
   describe('should register all model relationships of the MockApp', function(){
-    let allAssocs = [];
+    let allAssocs = [],
+      modelNames = Object.keys(app.gi.models);
+    let assembleGraphQLObjectsSpy = sinon.spy(app.gi.modelManager,'assembleGraphQLObjects'),
+      modelSpies = {};
+
+    modelNames.forEach((objectName)=>{
+      modelSpies[objectName] = sinon.spy(app.gi.models[objectName],'createGraphQLInstance');
+    });
+
     app.gi.modelManager.associateObjects();
 
 
     it('count if all objects to be under ModelManager.associationDictionary', function(){
-      Object.keys(app.gi.models).forEach((objectName)=>{
+      modelNames.forEach((objectName)=>{
         allAssocs = allAssocs.concat(app.gi.models[objectName].association);
+
       });
       expect(Object.keys(app.gi.modelManager.associationDictionary)).to.have.lengthOf(allAssocs.length);
     })
-
     describe('should have all expected relationships', function(){
       let expectedRelationships = [
         'User hasMany UserRole',
@@ -69,6 +86,8 @@ describe('ModelManager:',function(){
       ];
       expectedRelationships.forEach((rel)=>{
         it(`${rel} should exist`,function(){
+          var relVal = app.gi.modelManager.associationDictionary[rel];
+          //console.log(relVal.source,relVal.associationType,relVal.target); improve test by comparing internal values of relVal
           expect(app.gi.modelManager.associationDictionary[rel]).not.to.be.undefined;
         })
       })
@@ -76,9 +95,40 @@ describe('ModelManager:',function(){
     /*
     creates the correct relationship dictionary with its correspond Sequelize relationship
     */
+    //app.gi.modelManager.assembleGraphQLObjects(assembleGraphQLObjectsSpy);
+    it('after association it should trigger the graphQL object assembly : gsql.modelManager.assembleGraphQLObjects', function(){
+      expect(assembleGraphQLObjectsSpy).to.have.been.called;
+    })
+
+    describe('properly trigger graphql initalization all models',function(){
+
+      modelNames.forEach((objectName)=>{
+        it(`should initialize ${objectName} graphqlization`,function(){
+          expect(modelSpies[objectName]).to.have.been.called;
+        })
+      });
+    })
   })
 
+  describe('GraphQL Models starting:', function(){
+
+    describe('graphql models: ', function(){
+
+      Object.keys(modelFiles).forEach((modelName)=>{
+        it(`${modelName} should have a graphql object in the Gsql.models as .graphql property`, function(){
+          let generatedGraphQLObject = app.gi.models[modelName].graphql;
+          expect(generatedGraphQLObject).not.to.be.undefined;
+          expect(generatedGraphQLObject).to.an.instanceof(graphql.GraphQLObjectType);
+        })
+      })
+    })
+
+
+  })
+
+
   it('should have an initializeDatabase function & initialize it correctly', function(done){
+
     expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;
     app.gi.modelManager.initializeDatabase()
@@ -102,7 +152,6 @@ describe('ModelManager:',function(){
       expect(noError).to.equal(true);
       done(err)
     })
-
   });
 
 
