@@ -40,6 +40,10 @@ module.exports = {
     teams:{
       belongsToMany: 'Team',
       through: 'Membership' // a n:n relationship using another Membershi object
+    },
+    profile:{
+      hasOne: 'UserProfile',
+      foreignKey: 'userId'
     }
   },
   config:{

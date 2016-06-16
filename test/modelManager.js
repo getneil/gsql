@@ -84,6 +84,7 @@ describe('ModelManager:',function(){
     describe('should have all expected relationships', function(){
       let expectedRelationships = [
         'User hasMany UserRole',
+        'User hasOne UserProfile',
         'User belongsToMany Team',
         'UserProfile belongsTo User',
         'Team belongsToMany User',
@@ -96,6 +97,7 @@ describe('ModelManager:',function(){
           var relVal = app.gi.modelManager.associationDictionary[rel];
           //console.log(relVal.source,relVal.associationType,relVal.target); improve test by comparing internal values of relVal
           expect(app.gi.modelManager.associationDictionary[rel]).not.to.be.undefined;
+          var m = app.gi.modelManager.associationDictionary[rel];
         })
       })
     });
@@ -135,34 +137,76 @@ describe('ModelManager:',function(){
 
 
   it('should have an initializeDatabase function & initialize it correctly', function(done){
-
     expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;
-    app.gi.modelManager.initializeDatabase()
-    .then(function(data){
-      let notFound = false;
-      sequence.forEach((k)=>{
-        let seqName = tools.camelTo_(k).toLowerCase();
-        let found = data.find((obj)=>{
-          return obj.name === seqName;
-        })
-        if(!found){
-          notFound = true;
-        }
-      });
-      expect(notFound).to.equal(false);
-      expect(noError).to.equal(true);
-      done()
+    app.gi.connection.dropAllSchemas()
+    .then(function(){
+      app.gi.modelManager.initializeDatabase()
+      .then(function(data){
+        let notFound = false;
+        sequence.forEach((k)=>{
+          let seqName = tools.camelTo_(k).toLowerCase();
+          let found = data.find((obj)=>{
+            return obj.name === seqName;
+          })
+          if(!found){
+            notFound = true;
+          }
+        });
+        expect(notFound).to.equal(false);
+        expect(noError).to.equal(true);
+        done()
+      })
+      .catch((err)=>{
+        noError = false;
+        expect(noError).to.equal(true);
+        done(err)
+      })
     })
-    .catch((err)=>{
-      noError = false;
-      expect(noError).to.equal(true);
-      done(err)
-    })
+
   });
 
 
 
+})
+
+describe('GraphQL Associations', function(){
+
+
+  var rawRelationships = {
+    // 1:1
+    profile: {
+      hasOne: 'UserProfile',
+      foreignKey: 'userId'
+    },
+    // 1:n
+    roles: {
+      hasMany: 'UserRole',
+      foreignKey: 'userId'
+    },
+    // n:n
+    teams:{
+      belongsToMany: 'Team',
+      through: 'Membership'
+    }
+  }
+  var graphQLFieldsWithRelationships = GsqlModelClass.defineGraphqlFields('User',rawRelationships, app.gi.models, app.gi.modelManager.associationDictionary);
+
+  it('should return same number of fields for attributes with relationships', function(){
+    expect(Object.keys(graphQLFieldsWithRelationships)).to.have.lengthOf(Object.keys(rawRelationships).length);
+  })
+  it('should return a 1:1 relationship if proper config is provided', function(){
+    expect(graphQLFieldsWithRelationships.profile).not.to.be.undefined;
+    expect(graphQLFieldsWithRelationships.profile.type).to.be.an.instanceof(GraphQLObjectType);
+    expect(graphQLFieldsWithRelationships.profile.type.name).to.equal('UserProfile');
+  })
+  it('should return a 1:n relationship if proper config is provided', function(){
+    expect(graphQLFieldsWithRelationships.roles).not.to.be.undefined;
+  })
+  it('should return a n:n relationship if proper config is provided', function(){
+    expect(graphQLFieldsWithRelationships.teams).not.to.be.undefined;
+
+  })
 })
 
 describe('Mock GraphQLSchema creation', function(){
@@ -196,7 +240,6 @@ describe('Mock GraphQLSchema creation', function(){
       })
 
       if(isList){
-
         it(`should return a proper list query field for ${field}`,function(){
           expect(result.args.limit).to.not.be.undefined;
           expect(result.type).to.have.instanceof(GraphQLList);

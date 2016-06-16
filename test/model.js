@@ -250,7 +250,7 @@ describe('GSQL Model and Gsql.define() :',function(){
       }
     })
 
-    var graphqlFields = GsqlModelClass.defineGraphqlFields(sampleRawAttributes);
+    var graphqlFields = GsqlModelClass.defineGraphqlFields('Sample',sampleRawAttributes, app.gi.models, app.gi.modelManager.associationDictionary);
     var graphqlQLFieldsKeys = Object.keys(graphqlFields);
 
     it('should return the same number of fields',function(){
@@ -268,7 +268,6 @@ describe('GSQL Model and Gsql.define() :',function(){
         expect(resultTypeName).to.equal(expectedTypeName);
       })
     })
-
   })
 
 
