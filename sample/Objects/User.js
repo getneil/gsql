@@ -33,10 +33,6 @@ module.exports = {
         notEmpty: true
       }
     },
-    roles:{
-      hasMany: 'UserRole',
-      foreignKey: 'userId' // a direct 1:n relationship connection via FK as userId
-    },
     teams:{
       belongsToMany: 'Team',
       through: 'Membership' // a n:n relationship using another Membershi object
@@ -44,6 +40,10 @@ module.exports = {
     profile:{
       hasOne: 'UserProfile',
       foreignKey: 'userId'
+    },
+    roles:{
+      hasMany: 'UserRole',
+      foreignKey: 'userId' // a direct 1:n relationship connection via FK as userId
     }
   },
   config:{
