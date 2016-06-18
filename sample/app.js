@@ -27,18 +27,33 @@ gsql.connection.dropAllSchemas()
 })
 .then(function(){
 
-  return Promise.all([
-    gsql.models.User.sequelize.create({id:1,email:'admin-1@gsql.com',password:'test1'}),
-    gsql.models.User.sequelize.create({id:2,email:'admin-2@gsql.com',password:'test2'})
+  return gsql.models.User.sequelize.bulkCreate([
+    {id:1,email:'admin-1@gsql.com',password:'test1'},
+    {id:2,email:'admin-2@gsql.com',password:'test2'}
   ]).then(function(){
-    gsql.models.UserProfile.sequelize.create({id:1, firstName: 'First', lastName:'User', userId:1});
-    gsql.models.UserProfile.sequelize.create({id:2, firstName: 'Second', lastName:'User', userId:2});
-    gsql.models.UserRole.sequelize.create({id:1, type: 'admin', userId: 1});
-    gsql.models.UserRole.sequelize.create({id:2, type: 'regular', userId: 1});
-    gsql.models.UserRole.sequelize.create({id:3, type: 'admin', userId: 2});
-    gsql.models.UserRole.sequelize.create({id:4, type: 'regular', userId: 2});
-    gsql.models.Team.sequelize.create({id:1,name:'Team A'});
-    gsql.models.Team.sequelize.create({id:2,name:'Team B'});
+    gsql.models.UserProfile.sequelize.bulkCreate([
+      {id:1, firstName: 'First', lastName:'User', userId:1},
+      {id:2, firstName: 'Second', lastName:'User', userId:2}
+    ]);
+
+    gsql.models.UserRole.sequelize.bulkCreate([
+      {id:1, type: 'admin', userId: 1},
+      {id:2, type: 'regular', userId: 1},
+      {id:3, type: 'admin', userId: 2},
+      {id:4, type: 'regular', userId: 2}
+    ]);
+
+    Promise.all([
+      gsql.models.Team.sequelize.create({id:1,name:'Team A'}),
+      gsql.models.Team.sequelize.create({id:2,name:'Team B'})
+    ]).then(()=>{
+      gsql.models.Membership.sequelize.bulkCreate([
+        {id:1,userId:1,teamId:1},
+        {id:2,userId:1,teamId:2},
+        {id:3,userId:2,teamId:1},
+        {id:4,userId:2,teamId:2},
+      ])
+    })
   })
 })
 .then(function(){
