@@ -35,12 +35,12 @@ describe('GSQL config:', function(){
     .catch(test);
 
   })
-  it('should have a linkObjects method', function(){
-    // this will initialize the association/relationship of the Sequelize models
-    // will also be used by graphQL to establish type relation among objects
-    // note: create a modelManager object
-    expect(app.gi.linkObjects).to.be.a('function');
-  })
+  // it('should have a linkObjects method', function(){
+  //   // this will initialize the association/relationship of the Sequelize models
+  //   // will also be used by graphQL to establish type relation among objects
+  //   // note: create a modelManager object
+  //   expect(app.gi.linkObjects).to.be.a('function');
+  // })
   it('should have a defineGraphqlSchema method', function(){
     expect(app.gi.defineGraphqlSchema).to.be.a('function');
   })
