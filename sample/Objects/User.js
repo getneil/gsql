@@ -33,6 +33,11 @@ module.exports = {
         notEmpty: true
       }
     },
+    birthdate:{
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.NOW
+    },
     teams:{
       belongsToMany: 'Team',
       through: 'Membership' // a n:n relationship using another Membershi object

@@ -262,9 +262,9 @@ describe('GSQL Model and Gsql.define() :',function(){
     })
 
     Object.keys(gsqlConvert.sequelizeToGraphql).forEach((field)=>{
-      it(`expects ${field} GraphQLType`,function(){
-        let resultTypeName = graphqlFields[field].type.name
-          , expectedTypeName = gsqlConvert.sequelizeToGraphql[field].split('GraphQL')[1];
+      let resultTypeName = graphqlFields[field].type.name
+        , expectedTypeName = gsqlConvert.sequelizeToGraphql[field].split('GraphQL')[1];
+      it(`expects ${field} GraphQLType ${expectedTypeName}`,function(){
         expect(resultTypeName).to.equal(expectedTypeName);
       })
     })
