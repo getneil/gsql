@@ -2,12 +2,15 @@
 Simplified Sequelize and GraphQL models
 
 ### Table of Contents
-**[Features](#features)**
-**[Installation Instructions](#usage)**
-**[Usage Instructions](#usage-instructions)**
-**[Limitations or Next Steps](#limitations)**
-**[Dependencies](#dependencies)**
-##Features
+- **[Features](#features)**
+- **[Installation Instructions](#installation-instructions)**
+- **[Usage Instructions](#usage-instructions)**
+- **[Next Steps](#next-steps)**
+- **[Dependencies](#dependencies)**
+
+## Features
+- define sequelize and graphql objects w/ one definition pattern
+- simple way to create graphql schema
 
 ## Installation Instruction
 ```
