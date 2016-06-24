@@ -1,5 +1,7 @@
 'use strict';
-var expect = require('chai').expect;
+const expect = require('chai').expect;
+const requiredDirectory = require('require-dir')
+  , GraphQL = require('graphql');
 
 var app = require('../sample/app-test.js')
   , Gsql = require('../')
@@ -7,8 +9,8 @@ var app = require('../sample/app-test.js')
   , GsqlModel = require('../lib/model.js')
   , Sequelize = require('sequelize')
   , tools = require('../lib/tools.js')
-  , GraphQL = require('graphql')
-  , gsqlConvert = require('../lib/configurations/convert.js');
+  , gsqlConvert = require('../lib/configurations/convert.js')
+  , mockObjects = requiredDirectory('./Objects', {recurse: true});;
 
 
 describe('GSQL Model and Gsql.define() :',function(){
@@ -202,7 +204,15 @@ describe('GSQL Model and Gsql.define() :',function(){
 
   })
 
-  describe('Indirect Test: should define the proper dependency of object:',function(){
+  describe('Use Case Test: ',function(){
+    let sampleApp = new Gsql('modelDatabase2', 'username', 'password', {
+      dialect: 'sqlite',
+      storage: 'memory'
+    });
+    const models = {};
+    for (var key of Object.keys(mockObjects)) {
+      models[key] = sampleApp.define(key, mockObjects[key]);
+    }
     let dependencyTree = {
       User: [],
       Team: [],
@@ -212,68 +222,63 @@ describe('GSQL Model and Gsql.define() :',function(){
     }
 
     Object.keys(dependencyTree).forEach((objectName)=>{
-      it(`${objectName} requires ${dependencyTree[objectName].length ? dependencyTree[objectName]: 'no dependency'}`, function(){
-        let appDefinedDependency = app.gi.models[objectName].requires;
+      it(`should define the proper dependency of mockObject: ${objectName} requires ${dependencyTree[objectName].length ? dependencyTree[objectName]: 'no dependency'}`, function(){
+        let appDefinedDependency = sampleApp.models[objectName].requires;
         expect(appDefinedDependency).to.have.lengthOf(dependencyTree[objectName].length);
         expect(appDefinedDependency).to.have.members(dependencyTree[objectName]);
       })
     })
 
-  })
-
-  describe('should return a proper GSQL Model', function(){
-
-    it('should be an instance of GSQL model', function(){
-      expect(app.gi.models.User).to.be.an.instanceof(GsqlModel);
-    })
-    it('with a Sequelize model on  gsql.Define(...).sequelize attribute',function(){
-      expect(app.gi.models.User.sequelize).to.be.an.instanceof(Sequelize.Model);
-    })
-    it('with a dictionary of association', function(){
-      expect(typeof app.gi.models.User.association).to.be.equal('object');
-    })
-    // removed being done for now in ModelManager test
-    // it('with a GraphQL model on  gsql.Define(...).graphql attribute',function(){
-    //   var graphqlModelClass = "";
-    //   expect(app.gi.models.User.graphql).to.be.an.instanceof(graphqlModelClass);
-    // })
-  })
-
-  describe('Return a correct basic graphql field depending on sequelize type provided:',function(){
-
-    var sampleRawAttributes = {
-      id:{
-        type: Sequelize.INTEGER,
-        primaryKey: true
-      }
-    };
-
-    var sequelizeTypes = Object.keys(gsqlConvert.sequelizeToGraphql);
-    sequelizeTypes.forEach((sequelizeType)=>{
-      sampleRawAttributes[sequelizeType] = {
-        type: Sequelize[sequelizeType.toUpperCase()]
-      }
+    Object.keys(models).forEach((objectName)=>{
+      it(`App mock model(${objectName}) should be an instance of GSQL model`, function(){
+        expect(sampleApp.models.User).to.be.an.instanceof(GsqlModel);
+      })
+      it(`App mock model(${objectName}) should have a Sequelize model on  gsql.Define(...).sequelize attribute`,function(){
+        expect(sampleApp.models.User.sequelize).to.be.an.instanceof(Sequelize.Model);
+      })
+      it(`App mock model(${objectName}) should have a dictionary of association`, function(){
+        expect(typeof sampleApp.models.User.association).to.be.equal('object');
+      })
     })
 
-    var graphqlFields = GsqlModel.defineGraphqlFields('Sample',sampleRawAttributes, app.gi.models, app.gi.modelManager.associationDictionary);
-    var graphqlQLFieldsKeys = Object.keys(graphqlFields);
+    describe('Return a correct basic graphql field depending on sequelize type provided:',function(){
 
-    it('should return the same number of fields',function(){
-      expect(graphqlQLFieldsKeys).to.have.lengthOf(Object.keys(sampleRawAttributes).length);
-    })
+      var sampleRawAttributes = {
+        id:{
+          type: Sequelize.INTEGER,
+          primaryKey: true
+        }
+      };
 
-    it('should return a GraphQLNonNull for being a PK)', function(){
-      expect(graphqlFields.id.type).to.be.an.instanceof(GraphQL.GraphQLNonNull);
-    })
+      var sequelizeTypes = Object.keys(gsqlConvert.sequelizeToGraphql);
+      sequelizeTypes.forEach((sequelizeType)=>{
+        sampleRawAttributes[sequelizeType] = {
+          type: Sequelize[sequelizeType.toUpperCase()]
+        }
+      })
 
-    Object.keys(gsqlConvert.sequelizeToGraphql).forEach((field)=>{
-      let resultTypeName = graphqlFields[field].type.name
-        , expectedTypeName = gsqlConvert.sequelizeToGraphql[field].split('GraphQL')[1];
-      it(`expects ${field} GraphQLType ${expectedTypeName}`,function(){
-        expect(resultTypeName).to.equal(expectedTypeName);
+      var graphqlFields = GsqlModel.defineGraphqlFields('Sample',sampleRawAttributes, sampleApp.models, sampleApp.modelManager.associationDictionary);
+      var graphqlQLFieldsKeys = Object.keys(graphqlFields);
+
+      it('should return the same number of fields',function(){
+        expect(graphqlQLFieldsKeys).to.have.lengthOf(Object.keys(sampleRawAttributes).length);
+      })
+
+      it('should return a GraphQLNonNull for being a PK)', function(){
+        expect(graphqlFields.id.type).to.be.an.instanceof(GraphQL.GraphQLNonNull);
+      })
+
+      Object.keys(gsqlConvert.sequelizeToGraphql).forEach((field)=>{
+        let resultTypeName = graphqlFields[field].type.name
+          , expectedTypeName = gsqlConvert.sequelizeToGraphql[field].split('GraphQL')[1];
+        it(`expects ${field} GraphQLType ${expectedTypeName}`,function(){
+          expect(resultTypeName).to.equal(expectedTypeName);
+        })
       })
     })
   })
+
+
 
 
 })
