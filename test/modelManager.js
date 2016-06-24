@@ -8,8 +8,9 @@ const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const requiredDirectory = require('require-dir');
 const modelFiles = requiredDirectory('../sample/Objects', {recurse: true});
-const GsqlModelClass = require('../lib/model.js');
-const tools = require('../lib/tools.js');
+const GsqlModelClass = require('../lib/model.js')
+  ,   GsqlModelManagerClass = require('../lib/model-manager.js')
+  ,   tools = require('../lib/tools.js');
 
 const graphql = require('graphql');
 const graphqlSequelize = require('graphql-sequelize');
@@ -47,19 +48,6 @@ describe('ModelManager:',function(){
 
 
   let sequence = [ 'User', 'Team', 'Membership', 'UserProfile', 'UserRole' ];
-  // expectation is depending on the structure of the app in ./Objects
-  it("should determine the proper dependency hierarchy",()=>{
-    let syncSequence = app.gi.modelManager.getSyncSequence(),
-      inOrder = true;
-      sequence.forEach((expectedObject,index)=>{
-        if(!syncSequence[index] || syncSequence[index] != expectedObject){
-          inOrder = false;
-        }
-      })
-      expect(inOrder).to.equal(true);
-  })
-
-
 
   describe('should register all model relationships of the MockApp', function(){
     let allAssocs = [],
