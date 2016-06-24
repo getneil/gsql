@@ -1,47 +1,57 @@
 'use strict';
-const app = require('../sample/app-test.js');
-const chai = require('chai');
-const expect = chai.expect;
-const spy = chai.spy;
-const sinon = require("sinon");
-const sinonChai = require("sinon-chai");
+const chai = require('chai')
+  , sinon = require("sinon")
+  , sinonChai = require("sinon-chai")
+  , expect = chai.expect
+  , spy = chai.spy;
+
 chai.use(sinonChai);
+
 const requiredDirectory = require('require-dir');
-const modelFiles = requiredDirectory('../sample/Objects', {recurse: true});
+
+const mockObjects = requiredDirectory('./Objects', {recurse: true});
 
 const Gsql = require('../lib/gsql.js')
-  ,   GsqlModelClass = require('../lib/model.js')
-  ,   GsqlModelManagerClass = require('../lib/model-manager.js')
-  ,   tools = require('../lib/tools.js');
+  , GsqlModelClass = require('../lib/model.js')
+  , GsqlModelManagerClass = require('../lib/model-manager.js')
+  , tools = require('../lib/tools.js');
 
-const graphql = require('graphql');
-const graphqlSequelize = require('graphql-sequelize');
+const graphql = require('graphql')
+  , GraphQLList = graphql.GraphQLList
+  , GraphQLObjectType = graphql.GraphQLObjectType
+  , GraphQLSchema = graphql.GraphQLSchema;
 
-const GraphQLList = graphql.GraphQLList;
-const GraphQLObjectType = graphql.GraphQLObjectType;
-const GraphQLSchema = graphql.GraphQLSchema;
-const resolver = graphqlSequelize.resolver;
-const defaultListArgs = graphqlSequelize.defaultListArgs;
-const defaultArgs = graphqlSequelize.defaultArgs;
+const graphqlSequelize = require('graphql-sequelize')
+  , resolver = graphqlSequelize.resolver
+  , defaultListArgs = graphqlSequelize.defaultListArgs
+  , defaultArgs = graphqlSequelize.defaultArgs;
 
 describe('ModelManager:',function(){
+  let sampleApp = new Gsql('ModelManagerTest1', 'username', 'password', {
+    dialect: 'sqlite',
+    storage: 'memory'
+  });
+  const models = {};
+  for (var key of Object.keys(mockObjects)) {
+    models[key] = sampleApp.define(key, mockObjects[key]);
+  }
+
   it('should be defined in the gsql instance and should be an instance of model-manager', function(){
-    var rawModelManager = require('../lib/model-manager.js');
-    expect(app.gi.modelManager).to.be.an.instanceof(rawModelManager);
+    expect(sampleApp.modelManager).to.be.an.instanceof(GsqlModelManagerClass);
   });
 
   it('should be able to access all the defined models in Gsql main.', function(){
-    expect(app.gi.modelManager.models).to.deep.equal(app.gi.models);
+    expect(sampleApp.modelManager.models).to.deep.equal(sampleApp.models);
   })
 
   // test the mock app
   describe('should only have the intialized models in Objects folder of the Mock App ', function(){
     it('should have the proper length of objects',function(){
-      expect(Object.keys(app.gi.modelManager.models)).to.have.lengthOf(Object.keys(modelFiles).length);
+      expect(Object.keys(sampleApp.modelManager.models)).to.have.lengthOf(Object.keys(mockObjects).length);
     });
-    Object.keys(modelFiles).forEach((modelName)=>{
+    Object.keys(mockObjects).forEach((modelName)=>{
       it(`${modelName} should exist`, function(){
-        let modelTest = app.gi.modelManager.models[modelName];
+        let modelTest = sampleApp.modelManager.models[modelName];
         expect(modelTest).not.to.be.undefined;
         expect(modelTest).to.be.an.instanceof(GsqlModelClass);
       });
@@ -53,23 +63,22 @@ describe('ModelManager:',function(){
 
   describe('should register all model relationships of the MockApp', function(){
     let allAssocs = [],
-      modelNames = Object.keys(app.gi.models);
-    let assembleGraphQLObjectsSpy = sinon.spy(app.gi.modelManager,'assembleGraphQLObjects'),
+      modelNames = Object.keys(sampleApp.models);
+    let assembleGraphQLObjectsSpy = sinon.spy(sampleApp.modelManager,'assembleGraphQLObjects'),
       modelSpies = {};
 
     modelNames.forEach((objectName)=>{
-      modelSpies[objectName] = sinon.spy(app.gi.models[objectName],'createGraphQLInstance');
+      modelSpies[objectName] = sinon.spy(sampleApp.models[objectName],'createGraphQLInstance');
     });
 
-    app.gi.modelManager.associateObjects();
+    sampleApp.modelManager.associateObjects();
 
 
     it('count if all objects to be under ModelManager.associationDictionary', function(){
       modelNames.forEach((objectName)=>{
-        allAssocs = allAssocs.concat(app.gi.models[objectName].association);
-
+        allAssocs = allAssocs.concat(sampleApp.models[objectName].association);
       });
-      expect(Object.keys(app.gi.modelManager.associationDictionary)).to.have.lengthOf(allAssocs.length);
+      expect(Object.keys(sampleApp.modelManager.associationDictionary)).to.have.lengthOf(allAssocs.length);
     })
     describe('should have all expected relationships', function(){
       let expectedRelationships = [
@@ -84,10 +93,10 @@ describe('ModelManager:',function(){
       ];
       expectedRelationships.forEach((rel)=>{
         it(`${rel} should exist`,function(){
-          var relVal = app.gi.modelManager.associationDictionary[rel];
+          var relVal = sampleApp.modelManager.associationDictionary[rel];
           //console.log(relVal.source,relVal.associationType,relVal.target); improve test by comparing internal values of relVal
-          expect(app.gi.modelManager.associationDictionary[rel]).not.to.be.undefined;
-          var m = app.gi.modelManager.associationDictionary[rel];
+          expect(sampleApp.modelManager.associationDictionary[rel]).not.to.be.undefined;
+          var m = sampleApp.modelManager.associationDictionary[rel];
         })
       })
     });
@@ -113,9 +122,9 @@ describe('ModelManager:',function(){
 
     describe('graphql models: ', function(){
 
-      Object.keys(modelFiles).forEach((modelName)=>{
+      Object.keys(mockObjects).forEach((modelName)=>{
         it(`${modelName} should have a graphql object in the Gsql.models as .graphql property`, function(){
-          let generatedGraphQLObject = app.gi.models[modelName].graphql;
+          let generatedGraphQLObject = sampleApp.models[modelName].graphql;
           expect(generatedGraphQLObject).not.to.be.undefined;
           expect(generatedGraphQLObject).to.an.instanceof(graphql.GraphQLObjectType);
         })
@@ -125,13 +134,12 @@ describe('ModelManager:',function(){
 
   })
 
-
   it('should have an initializeDatabase function & initialize it correctly', function(done){
-    expect(app.gi.modelManager.initializeDatabase).to.be.a('function');
+    expect(sampleApp.modelManager.initializeDatabase).to.be.a('function');
     let noError = true;
-    app.gi.connection.dropAllSchemas()
+    sampleApp.connection.dropAllSchemas()
     .then(function(){
-      app.gi.modelManager.initializeDatabase()
+      sampleApp.modelManager.initializeDatabase()
       .then(function(data){
         let notFound = false;
         sequence.forEach((k)=>{
@@ -153,15 +161,19 @@ describe('ModelManager:',function(){
         done(err)
       })
     })
-
   });
-
-
-
 })
 
 describe('GraphQL Associations', function(){
-
+  let sampleApp = new Gsql('ModelManagerTest2', 'username', 'password', {
+    dialect: 'sqlite',
+    storage: 'memory'
+  });
+  const models = {};
+  for (var key of Object.keys(mockObjects)) {
+    models[key] = sampleApp.define(key, mockObjects[key]);
+  }
+  sampleApp.modelManager.associateObjects();
 
   var rawRelationships = {
     // 1:1
@@ -180,7 +192,12 @@ describe('GraphQL Associations', function(){
       through: 'Membership'
     }
   }
-  var graphQLFieldsWithRelationships = GsqlModelClass.defineGraphqlFields('User',rawRelationships, app.gi.models, app.gi.modelManager.associationDictionary);
+  var graphQLFieldsWithRelationships = GsqlModelClass.defineGraphqlFields(
+    'User',
+    rawRelationships,
+    sampleApp.models,
+    sampleApp.modelManager.associationDictionary
+  );
 
   it('should return same number of fields for attributes with relationships', function(){
     expect(Object.keys(graphQLFieldsWithRelationships)).to.have.lengthOf(Object.keys(rawRelationships).length);
@@ -195,11 +212,20 @@ describe('GraphQL Associations', function(){
   })
   it('should return a n:n relationship if proper config is provided', function(){
     expect(graphQLFieldsWithRelationships.teams).not.to.be.undefined;
-
   })
 })
 
 describe('Mock GraphQLSchema creation', function(){
+  let sampleApp = new Gsql('ModelManagerTest3', 'username', 'password', {
+    dialect: 'sqlite',
+    storage: 'memory'
+  });
+  const models = {};
+  for (var key of Object.keys(mockObjects)) {
+    models[key] = sampleApp.define(key, mockObjects[key]);
+  }
+  sampleApp.modelManager.associateObjects();
+
   let rootQueryFieldsConfig = {
     user: {
       type: 'User'
@@ -218,7 +244,7 @@ describe('Mock GraphQLSchema creation', function(){
   };
 
   describe('correctly define graphql query fields',function(){
-    let models = app.gi.models;
+    let models = sampleApp.models;
     let resultRootQueryFields = Gsql.getGraphqlQueryFields(models, rootQueryFieldsConfig);
     Object.keys(rootQueryFieldsConfig).forEach((field)=>{
 
@@ -245,7 +271,7 @@ describe('Mock GraphQLSchema creation', function(){
 
   describe('GSQL.defineGraphqlSchema',function(){
 
-    var resultSchema = app.gi.defineGraphqlSchema(rootQueryFieldsConfig);
+    var resultSchema = sampleApp.defineGraphqlSchema(rootQueryFieldsConfig);
 
     it('should return a proper graphql schema', function(){
       expect(resultSchema).to.be.an.instanceof(GraphQLSchema);

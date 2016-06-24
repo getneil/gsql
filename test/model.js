@@ -1,13 +1,12 @@
 'use strict';
-const expect = require('chai').expect;
-const requiredDirectory = require('require-dir')
-  , GraphQL = require('graphql');
+const expect = require('chai').expect
+  , requiredDirectory = require('require-dir')
+  , GraphQL = require('graphql')
+  , Sequelize = require('sequelize');
 
-var app = require('../sample/app-test.js')
-  , Gsql = require('../')
+var Gsql = require('../')
   , GsqlModelManager = require('../lib/model-manager.js')
   , GsqlModel = require('../lib/model.js')
-  , Sequelize = require('sequelize')
   , tools = require('../lib/tools.js')
   , gsqlConvert = require('../lib/configurations/convert.js')
   , mockObjects = requiredDirectory('./Objects', {recurse: true});;
@@ -16,7 +15,7 @@ var app = require('../sample/app-test.js')
 describe('GSQL Model and Gsql.define() :',function(){
 
   describe('Model Definition', function(){
-    let sampleApp = new Gsql('modelDatabase', 'username', 'password', {
+    let sampleApp = new Gsql('ModelTest1', 'username', 'password', {
       dialect: 'sqlite',
       storage: 'memory'
     });
@@ -205,7 +204,7 @@ describe('GSQL Model and Gsql.define() :',function(){
   })
 
   describe('Use Case Test: ',function(){
-    let sampleApp = new Gsql('modelDatabase2', 'username', 'password', {
+    let sampleApp = new Gsql('ModelTest2', 'username', 'password', {
       dialect: 'sqlite',
       storage: 'memory'
     });
@@ -277,8 +276,5 @@ describe('GSQL Model and Gsql.define() :',function(){
       })
     })
   })
-
-
-
 
 })
