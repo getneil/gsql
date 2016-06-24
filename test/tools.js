@@ -2,8 +2,10 @@
 var expect = require('chai').expect
   , Sequelize = require('sequelize');
 
-var GsqlModel = require('../lib/model.js'),
-  tools = require('../lib/tools.js');
+var GsqlModel = require('../lib/model.js')
+  , tools = require('../lib/tools.js');
+
+const app = require('../sample/app-test.js');
 
 const sampleAttributes = {
   id:{
@@ -54,4 +56,19 @@ describe('tools.associationStringName should be working correctly "sourceName re
 
   expect(tools.associationStringName(exampleObject)).to.equal('User hasMany Role');
 
+})
+
+let sequence = [ 'User', 'Team', 'Membership', 'UserProfile', 'UserRole' ];
+// expectation is depending on the structure of the app in ./Objects
+describe('tools.associationStringName should be working correctly "sourceName relationshipType targetName" ',function(){
+  it("should determine the proper dependency hierarchy",()=>{
+    let syncSequence = tools.getSyncSequence(app.gi.models),
+      inOrder = true;
+      sequence.forEach((expectedObject,index)=>{
+        if(!syncSequence[index] || syncSequence[index] != expectedObject){
+          inOrder = false;
+        }
+      })
+      expect(inOrder).to.equal(true);
+  })
 })

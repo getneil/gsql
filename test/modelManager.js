@@ -8,8 +8,11 @@ const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const requiredDirectory = require('require-dir');
 const modelFiles = requiredDirectory('../sample/Objects', {recurse: true});
-const GsqlModelClass = require('../lib/model.js');
-const tools = require('../lib/tools.js');
+
+const Gsql = require('../lib/gsql.js')
+  ,   GsqlModelClass = require('../lib/model.js')
+  ,   GsqlModelManagerClass = require('../lib/model-manager.js')
+  ,   tools = require('../lib/tools.js');
 
 const graphql = require('graphql');
 const graphqlSequelize = require('graphql-sequelize');
@@ -47,19 +50,6 @@ describe('ModelManager:',function(){
 
 
   let sequence = [ 'User', 'Team', 'Membership', 'UserProfile', 'UserRole' ];
-  // expectation is depending on the structure of the app in ./Objects
-  it("should determine the proper dependency hierarchy",()=>{
-    let syncSequence = app.gi.modelManager.getSyncSequence(),
-      inOrder = true;
-      sequence.forEach((expectedObject,index)=>{
-        if(!syncSequence[index] || syncSequence[index] != expectedObject){
-          inOrder = false;
-        }
-      })
-      expect(inOrder).to.equal(true);
-  })
-
-
 
   describe('should register all model relationships of the MockApp', function(){
     let allAssocs = [],
@@ -229,7 +219,7 @@ describe('Mock GraphQLSchema creation', function(){
 
   describe('correctly define graphql query fields',function(){
     let models = app.gi.models;
-    let resultRootQueryFields = app.gi.modelManager.getGraphqlQueryFields(rootQueryFieldsConfig);
+    let resultRootQueryFields = Gsql.getGraphqlQueryFields(models, rootQueryFieldsConfig);
     Object.keys(rootQueryFieldsConfig).forEach((field)=>{
 
       var isList = rootQueryFieldsConfig[field].list
@@ -254,13 +244,8 @@ describe('Mock GraphQLSchema creation', function(){
   })
 
   describe('GSQL.defineGraphqlSchema',function(){
-    let getGraphqlQueryFieldsSpy = sinon.spy(app.gi.modelManager,'getGraphqlQueryFields');
 
     var resultSchema = app.gi.defineGraphqlSchema(rootQueryFieldsConfig);
-
-    it('should trigger the getGraphqlQueryFields() of model manager', function(){
-      expect(getGraphqlQueryFieldsSpy).to.have.been.calledWith(rootQueryFieldsConfig);
-    })
 
     it('should return a proper graphql schema', function(){
       expect(resultSchema).to.be.an.instanceof(GraphQLSchema);
