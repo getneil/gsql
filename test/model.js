@@ -169,7 +169,8 @@ describe('GSQL Model and Gsql.define() :',function(){
         type: 'belongsToMany',
         targetName: 'Team',
         config:{
-          throughName: 'Membership'
+          throughName: 'Membership',
+          as: 'teams'
         }
       },
       {
@@ -177,7 +178,8 @@ describe('GSQL Model and Gsql.define() :',function(){
         type: 'hasMany',
         targetName: 'UserRole',
         config:{
-          foreignKey: 'userId'
+          foreignKey: 'userId',
+          as: 'roles'
         }
       },
     ]
